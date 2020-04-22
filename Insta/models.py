@@ -17,10 +17,12 @@ class InstaUser(AbstractUser):
 
 class Post(models.Model):
     author = models.ForeignKey(
-        InstaUser, 
+        InstaUser,
+        blank =True,
+        null=True,
         on_delete=models.CASCADE, 
-        related_name='my_posts'
-    )
+        related_name='posts'
+        )
     title = models.TextField(blank=True, null=True)
     image = ProcessedImageField(
         upload_to='static/images/posts',
@@ -28,7 +30,7 @@ class Post(models.Model):
         options={'quality':100},
         blank=True,
         null=True
-    )
+        )
     def get_like_count(self):
         return self.likes.count()
 
@@ -59,8 +61,7 @@ class Like(models.Model):
         related_name='likes')
     user = models.ForeignKey(
         InstaUser, 
-        on_delete=models.CASCADE,
-        related_name='likes')
+        on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ("post", "user")

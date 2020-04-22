@@ -7,7 +7,7 @@ from Insta.models import Post
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from Insta.forms import CustomUserCreationForm
-from Insta.models import Post, Like
+from Insta.models import Post, Like, Comment
 
 class HelloWorld(TemplateView):
     template_name = 'test.html'
