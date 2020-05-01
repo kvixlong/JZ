@@ -7,7 +7,7 @@ from Insta.models import Post
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from Insta.forms import CustomUserCreationForm
-from Insta.models import Post, Like, Comment
+from Insta.models import Post, Like, Comment, InstaUser, UserConnection
 
 class HelloWorld(TemplateView):
     template_name = 'test.html'
@@ -16,9 +16,20 @@ class PostsView(ListView):
     model = Post
     template_name = 'index.html'
 
+    def get_queryset(self):
+        current_user = self.request.user
+        following = set()
+        for conn in UserConnection.objects.filter(creator=current_user).select_related('following'): # pylint: disable=maybe-no-member
+            following.add(conn.following)
+        return Post.objects.filter(author__in=following) # pylint: disable=maybe-no-member
+
 class PostDetailView(DetailView):
     model = Post
     template_name = 'post_detail.html'
+
+class UserDetailView(DetailView):
+    model = InstaUser
+    template_name = 'user_detail.html'
 
 class PostCreateView(LoginRequiredMixin ,CreateView):
     model = Post
@@ -45,13 +56,13 @@ class SignUp(CreateView):
 @ajax_request
 def addLike(request):
     post_pk = request.POST.get('post_pk')
-    post = Post.objects.get(pk=post_pk)
+    post = Post.objects.get(pk=post_pk) # pylint: disable=maybe-no-member
     try:
         like = Like(post=post, user=request.user)
         like.save()
         result = 1
     except Exception as e:
-        like = Like.objects.get(post=post, user=request.user)
+        like = Like.objects.get(post=post, user=request.user) # pylint: disable=maybe-no-member
         like.delete()
         result = 0
 

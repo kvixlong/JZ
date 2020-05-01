@@ -13,7 +13,31 @@ class InstaUser(AbstractUser):
         blank=True,
         null=True
     )
+    def get_connections(self):
+        connections = UserConnection.objects.filter(creator=self) # pylint: disable=maybe-no-member
+        return connections
 
+    def get_followers(self):
+        followers = UserConnection.objects.filter(following=self) # pylint: disable=maybe-no-member
+        return followers
+
+    def is_followed_by(self, user):
+        followers = UserConnection.objects.filter(following=self) # pylint: disable=maybe-no-member
+        return followers.filter(creator=user).exists()
+
+class UserConnection(models.Model):
+    created = models.DateTimeField(auto_now_add=True, editable=False)
+    creator = models.ForeignKey(
+        InstaUser,
+        on_delete=models.CASCADE,
+        related_name="friendship_creator_set")
+    following = models.ForeignKey(
+        InstaUser,
+        on_delete=models.CASCADE,
+        related_name="friend_set")
+
+    def __str__(self):
+        return self.creator.username + ' follows ' + self.following.username # pylint: disable=maybe-no-member
 
 class Post(models.Model):
     author = models.ForeignKey(
@@ -32,10 +56,10 @@ class Post(models.Model):
         null=True
         )
     def get_like_count(self):
-        return self.likes.count()
+        return self.likes.count() # pylint: disable=maybe-no-member
 
     def get_absolute_url(self):
-        return reverse("post_detail", args=[str(self.id)])
+        return reverse("post_detail", args=[str(self.id)]) # pylint: disable=maybe-no-member
 
 
 
@@ -67,4 +91,4 @@ class Like(models.Model):
         unique_together = ("post", "user")
 
     def __str__(self):
-        return 'Like: '  +  self.user.username  +  ' likes '  +  self.post.title
+        return 'Like: '  +  self.user.username  +  ' likes '  +  self.post.title # pylint: disable=maybe-no-member
